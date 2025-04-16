@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
-const { Client, Environment } = require("@square/square-nodejs-sdk");
+const { Client, Environment } = require("@square/square");
 
 const app = express();
 app.use(cors());
