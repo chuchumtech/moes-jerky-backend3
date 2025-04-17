@@ -5,7 +5,7 @@ app.use(cors({
 }));
 
 const express = require("express");
-const cors = require("cors");
+//const cors = require("cors");
 const mongoose = require("mongoose");
 const fetch = require("node-fetch");
 const crypto = require("crypto");
