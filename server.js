@@ -5,6 +5,13 @@ const fetch = require("node-fetch");
 const crypto = require("crypto");
 require("dotenv").config();
 
+const User = mongoose.model("User", userSchema);
+
+app.get("/users", async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+});
+
 const app = express();
 
 // ✅ CORS setup to allow your live frontend
