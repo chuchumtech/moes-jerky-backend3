@@ -80,6 +80,32 @@ app.post("/payment", async (req, res) => {
     return res.status(400).json({ success: false, error: "Missing data" });
   }
 
+const User = mongoose.model("User", new mongoose.Schema({
+  name: String,
+  code: String
+}));
+
+app.get("/users", async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+});
+
+app.post("/users", async (req, res) => {
+  const user = new User(req.body);
+  await user.save();
+  res.json({ success: true });
+});
+
+app.put("/users/:id", async (req, res) => {
+  const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(updated);
+});
+
+app.delete("/users/:id", async (req, res) => {
+  await User.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
   try {
     const response = await fetch("https://connect.squareupsandbox.com/v2/payments", {
       method: "POST",
