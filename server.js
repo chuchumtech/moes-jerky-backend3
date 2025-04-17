@@ -50,6 +50,17 @@ app.get("/items", async (req, res) => {
   res.json(items);
 });
 
+app.post("/items", async (req, res) => {
+  try {
+    await Item.deleteMany({});
+    await Item.insertMany(req.body);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error saving items:", err);
+    res.status(500).json({ success: false, error: "Failed to save items" });
+  }
+});
+
 // ✅ Update product
 app.put("/items/:id", async (req, res) => {
   const updated = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
