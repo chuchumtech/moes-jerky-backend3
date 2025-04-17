@@ -5,6 +5,13 @@ const fetch = require("node-fetch");
 const crypto = require("crypto");
 require("dotenv").config();
 
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  code: String,
+});
+
 const User = mongoose.model("User", userSchema);
 
 app.get("/users", async (req, res) => {
