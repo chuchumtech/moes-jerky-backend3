@@ -41,7 +41,9 @@ const Item = mongoose.model("Item", new mongoose.Schema({
 const Order = mongoose.model("Order", new mongoose.Schema({
   customer: Object,
   cart: Array,
-  amount: Number
+  amount: Number,
+  status: { type: String, default: "Processing" }, // ✅ NEW
+  createdAt: { type: Date, default: Date.now }     // ✅ useful for sorting
 }));
 
 const User = mongoose.model("User", new mongoose.Schema({
