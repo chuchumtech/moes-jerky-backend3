@@ -1,28 +1,27 @@
-const cors = require("cors");
-
-app.use(cors({
-  origin: "https://moesjerky.shop"
-}));
-
 const express = require("express");
-//const cors = require("cors");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const fetch = require("node-fetch");
 const crypto = require("crypto");
 require("dotenv").config();
 
-// const app = express();
-// app.use(cors({
-//   origin: "https://moesjerky.shop"
-// }));
-// app.use(express.json());
+const app = express();
 
+// ✅ CORS setup to allow your live frontend
+app.use(cors({
+  origin: ["https://moesjerky.shop", "http://localhost:3000"]
+}));
+
+app.use(express.json());
+
+// ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
+// ✅ MongoDB schemas
 const Item = mongoose.model("Item", new mongoose.Schema({
   name: String,
   price: Number
@@ -34,21 +33,25 @@ const Order = mongoose.model("Order", new mongoose.Schema({
   amount: Number
 }));
 
+// ✅ Get all products
 app.get("/items", async (req, res) => {
   const items = await Item.find();
   res.json(items);
 });
 
+// ✅ Update product
 app.put("/items/:id", async (req, res) => {
   const updated = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
   res.json(updated);
 });
 
+// ✅ Get all orders
 app.get("/orders", async (req, res) => {
   const orders = await Order.find();
   res.json(orders);
 });
 
+// ✅ Handle payments + save orders
 app.post("/payment", async (req, res) => {
   const { token, amount, cart, customer } = req.body;
   if (!token || !amount || !cart || !customer) {
@@ -91,5 +94,6 @@ app.post("/payment", async (req, res) => {
   }
 });
 
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
