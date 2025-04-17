@@ -9,7 +9,7 @@ const app = express();
 
 // ✅ CORS setup to allow your live frontend
 app.use((req, res, next) => {
-  const allowedOrigins = ["https://moesjerky.shop", "http://localhost:3000"];
+  const allowedOrigins = ["https://moesjerky.shop", "http://localhost:3000", "https://heartfelt-strudel-c08548.netlify.app"];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
