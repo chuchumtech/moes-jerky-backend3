@@ -6,15 +6,21 @@ const crypto = require("crypto");
 require("dotenv").config();
 
 const app = express();
+
+// --- Delivery Date Schema ---
 const DeliveryDateSchema = new mongoose.Schema({
   date: { type: String, required: true, unique: true } // Store as ISO string
 });
-
 const DeliveryDate = mongoose.model('DeliveryDate', DeliveryDateSchema);
 
-// ✅ CORS setup to allow your live frontend
+// --- CORS setup to allow your live frontend ---
 app.use((req, res, next) => {
-  const allowedOrigins = ["https://moesjerky.shop", "http://localhost:3000", "https://heartfelt-strudel-c08548.netlify.app", "https://moesjerkytest.netlify.app"];
+  const allowedOrigins = [
+    "[https://moesjerky.shop](https://moesjerky.shop)",
+    "http://localhost:3000",
+    "[https://heartfelt-strudel-c08548.netlify.app](https://heartfelt-strudel-c08548.netlify.app)",
+    "[https://moesjerkytest.netlify.app](https://moesjerkytest.netlify.app)"
+  ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -30,14 +36,14 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// ✅ MongoDB connection
+// --- MongoDB connection ---
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
-// ✅ MongoDB schemas
+// --- MongoDB schemas ---
 const Item = mongoose.model("Item", new mongoose.Schema({
   name: String,
   price: Number
@@ -49,7 +55,8 @@ const Order = mongoose.model("Order", new mongoose.Schema({
   amount: Number,
   status: { type: String, default: "Processing" },
   createdAt: { type: Date, default: Date.now },
-  orderNumber: { type: Number, unique: true, index: true }
+  orderNumber: { type: Number, unique: true, index: true },
+  deliveryDate: { type: String, required: true } // <-- Added field
 }));
 
 const User = mongoose.model("User", new mongoose.Schema({
@@ -57,6 +64,7 @@ const User = mongoose.model("User", new mongoose.Schema({
   code: String
 }));
 
+// --- User endpoints ---
 app.get("/users", async (req, res) => {
   const users = await User.find();
   res.json(users);
@@ -78,7 +86,7 @@ app.delete("/users/:id", async (req, res) => {
   res.json({ success: true });
 });
 
-// ✅ Get all products
+// --- Product endpoints ---
 app.get("/items", async (req, res) => {
   const items = await Item.find();
   res.json(items);
@@ -95,19 +103,17 @@ app.post("/items", async (req, res) => {
   }
 });
 
-// ✅ Update product
 app.put("/items/:id", async (req, res) => {
   const updated = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
   res.json(updated);
 });
 
-// ✅ Get all orders
+// --- Orders endpoints ---
 app.get("/orders", async (req, res) => {
   const orders = await Order.find();
   res.json(orders);
 });
 
-// ✅ Get a single order by ID
 app.get("/order/:id", async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -120,7 +126,6 @@ app.get("/order/:id", async (req, res) => {
   }
 });
 
-// ✅ Update an order by ID (add this near your other routes)
 app.put("/orders/:id", async (req, res) => {
   try {
     const updated = await Order.findByIdAndUpdate(
@@ -135,15 +140,16 @@ app.put("/orders/:id", async (req, res) => {
   }
 });
 
+// --- Payment & Order creation (with deliveryDate) ---
 app.post("/payment", async (req, res) => {
-  const { token, amount, cart, customer } = req.body;
-  if (!token || !amount || !cart || !customer) {
+  const { token, amount, cart, customer, deliveryDate } = req.body;
+  if (!token || !amount || !cart || !customer || !deliveryDate) {
     return res.status(400).json({ success: false, error: "Missing data" });
   }
 
   try {
     // Square payment logic
-    const response = await fetch("https://connect.squareupsandbox.com/v2/payments", {
+    const response = await fetch("[https://connect.squareupsandbox.com/v2/payments",](https://connect.squareupsandbox.com/v2/payments",) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -172,7 +178,7 @@ app.post("/payment", async (req, res) => {
     let lastOrder = await Order.findOne().sort({ orderNumber: -1 }).exec();
     let nextOrderNumber = lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1001;
 
-    const newOrder = new Order({ cart, customer, amount, orderNumber: nextOrderNumber });
+    const newOrder = new Order({ cart, customer, amount, orderNumber: nextOrderNumber, deliveryDate });
     await newOrder.save();
 
     res.json({ success: true, payment: data.payment, orderNumber: nextOrderNumber });
@@ -182,6 +188,7 @@ app.post("/payment", async (req, res) => {
   }
 });
 
+// --- Delivery Dates API ---
 app.get('/delivery-dates', async (req, res) => {
   try {
     const dates = await DeliveryDate.find().sort({ date: 1 });
@@ -191,12 +198,10 @@ app.get('/delivery-dates', async (req, res) => {
   }
 });
 
-// POST a new delivery date
 app.post('/delivery-dates', async (req, res) => {
   try {
     const { date } = req.body;
     if (!date) return res.status(400).json({ error: 'Date required' });
-    // Prevent duplicates
     const exists = await DeliveryDate.findOne({ date });
     if (exists) return res.status(400).json({ error: 'Date already exists' });
     const newDate = new DeliveryDate({ date });
@@ -207,7 +212,6 @@ app.post('/delivery-dates', async (req, res) => {
   }
 });
 
-// DELETE a delivery date
 app.delete('/delivery-dates/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -218,6 +222,6 @@ app.delete('/delivery-dates/:id', async (req, res) => {
   }
 });
 
-// ✅ Start server
+// --- Start server ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
