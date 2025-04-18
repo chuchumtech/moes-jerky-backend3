@@ -101,6 +101,19 @@ app.get("/orders", async (req, res) => {
   res.json(orders);
 });
 
+// ✅ Get a single order by ID
+app.get("/order/:id", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // ✅ Handle payments + save orders
 app.post("/payment", async (req, res) => {
   const { token, amount, cart, customer } = req.body;
