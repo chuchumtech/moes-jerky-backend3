@@ -122,8 +122,8 @@ app.post("/payment", async (req, res) => {
   }
 
   try {
-    // Square payment logic (unchanged)
-  const response = await fetch("[https://connect.squareupsandbox.com/v2/payments",](https://connect.squareupsandbox.com/v2/payments",) {
+    // Square payment logic
+    const response = await fetch("[https://connect.squareupsandbox.com/v2/payments",](https://connect.squareupsandbox.com/v2/payments",) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
