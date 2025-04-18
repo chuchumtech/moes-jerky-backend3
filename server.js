@@ -149,23 +149,23 @@ app.post("/payment", async (req, res) => {
 
   try {
     // Square payment logic
-    const response = await fetch("[https://connect.squareupsandbox.com/v2/payments",](https://connect.squareupsandbox.com/v2/payments",) {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
-        "Square-Version": "2023-08-16"
-      },
-      body: JSON.stringify({
-        source_id: token,
-        idempotency_key: crypto.randomUUID(),
-        amount_money: {
-          amount: Math.round(amount * 100),
-          currency: "USD"
-        },
-        location_id: process.env.SQUARE_LOCATION_ID
-      })
-    });
+    const response = await fetch("https://connect.squareupsandbox.com/v2/payments", {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+         "Authorization": `Bearer ${process.env.SQUARE_ACCESS_TOKEN}`,
+         "Square-Version": "2023-08-16"
+       },
+       body: JSON.stringify({
+         source_id: token,
+         idempotency_key: crypto.randomUUID(),
+         amount_money: {
+           amount: Math.round(amount * 100),
+           currency: "USD"
+         },
+         location_id: process.env.SQUARE_LOCATION_ID
+       })
+     });
 
     const data = await response.json();
 
