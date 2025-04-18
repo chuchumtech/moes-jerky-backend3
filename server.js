@@ -6,6 +6,11 @@ const crypto = require("crypto");
 require("dotenv").config();
 
 const app = express();
+const DeliveryDateSchema = new mongoose.Schema({
+  date: { type: String, required: true, unique: true } // Store as ISO string
+});
+
+const DeliveryDate = mongoose.model('DeliveryDate', DeliveryDateSchema);
 
 // ✅ CORS setup to allow your live frontend
 app.use((req, res, next) => {
@@ -174,6 +179,42 @@ app.post("/payment", async (req, res) => {
   } catch (err) {
     console.error("Payment error:", err);
     res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.get('/delivery-dates', async (req, res) => {
+  try {
+    const dates = await DeliveryDate.find().sort({ date: 1 });
+    res.json(dates);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch dates' });
+  }
+});
+
+// POST a new delivery date
+app.post('/delivery-dates', async (req, res) => {
+  try {
+    const { date } = req.body;
+    if (!date) return res.status(400).json({ error: 'Date required' });
+    // Prevent duplicates
+    const exists = await DeliveryDate.findOne({ date });
+    if (exists) return res.status(400).json({ error: 'Date already exists' });
+    const newDate = new DeliveryDate({ date });
+    await newDate.save();
+    res.json(newDate);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to add date' });
+  }
+});
+
+// DELETE a delivery date
+app.delete('/delivery-dates/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await DeliveryDate.findByIdAndDelete(id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete date' });
   }
 });
 
