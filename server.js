@@ -222,6 +222,25 @@ app.delete('/delivery-dates/:id', async (req, res) => {
   }
 });
 
+// GET featured product
+app.get('/featured-product', async (req, res) => {
+  const doc = await db.collection('config').findOne({ _id: 'featured' });
+  if (!doc) return res.json({ productId: null, badgeText: '' });
+  res.json({ productId: doc.productId, badgeText: doc.badgeText });
+});
+
+// POST featured product
+app.post('/featured-product', async (req, res) => {
+  const { productId, badgeText } = req.body;
+  if (!productId) return res.status(400).json({ error: "Missing productId" });
+  await db.collection('config').updateOne(
+    { _id: 'featured' },
+    { $set: { productId, badgeText: badgeText || "" } },
+    { upsert: true }
+  );
+  res.json({ productId, badgeText });
+});
+
 // --- Start server ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
