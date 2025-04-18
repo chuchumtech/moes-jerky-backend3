@@ -16,10 +16,10 @@ const DeliveryDate = mongoose.model('DeliveryDate', DeliveryDateSchema);
 // --- CORS setup to allow your live frontend ---
 app.use((req, res, next) => {
   const allowedOrigins = [
-    "[https://moesjerky.shop](https://moesjerky.shop)",
+    "https://moesjerky.shop",
     "http://localhost:3000",
-    "[https://heartfelt-strudel-c08548.netlify.app](https://heartfelt-strudel-c08548.netlify.app)",
-    "[https://moesjerkytest.netlify.app](https://moesjerkytest.netlify.app)"
+    "https://heartfelt-strudel-c08548.netlify.app",
+    "https://moesjerkytest.netlify.app"
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
