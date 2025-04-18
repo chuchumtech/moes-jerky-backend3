@@ -42,8 +42,9 @@ const Order = mongoose.model("Order", new mongoose.Schema({
   customer: Object,
   cart: Array,
   amount: Number,
-  status: { type: String, default: "Processing" }, // ✅ NEW
-  createdAt: { type: Date, default: Date.now }     // ✅ useful for sorting
+  status: { type: String, default: "Processing" },
+  createdAt: { type: Date, default: Date.now },
+  orderNumber: { type: Number, unique: true, index: true }
 }));
 
 const User = mongoose.model("User", new mongoose.Schema({
@@ -114,7 +115,6 @@ app.get("/order/:id", async (req, res) => {
   }
 });
 
-// ✅ Handle payments + save orders
 app.post("/payment", async (req, res) => {
   const { token, amount, cart, customer } = req.body;
   if (!token || !amount || !cart || !customer) {
@@ -122,7 +122,8 @@ app.post("/payment", async (req, res) => {
   }
 
   try {
-    const response = await fetch("https://connect.squareupsandbox.com/v2/payments", {
+    // Square payment logic (unchanged)
+    const response = await fetch("[https://connect.squareupsandbox.com/v2/payments",](https://connect.squareupsandbox.com/v2/payments",) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -147,10 +148,14 @@ app.post("/payment", async (req, res) => {
       return res.status(500).json({ success: false, error: data.errors?.[0]?.detail || "Payment failed" });
     }
 
-    const newOrder = new Order({ cart, customer, amount });
+    // --- Sequential Order Number Logic ---
+    let lastOrder = await Order.findOne().sort({ orderNumber: -1 }).exec();
+    let nextOrderNumber = lastOrder && lastOrder.orderNumber ? lastOrder.orderNumber + 1 : 1001;
+
+    const newOrder = new Order({ cart, customer, amount, orderNumber: nextOrderNumber });
     await newOrder.save();
 
-    res.json({ success: true, payment: data.payment });
+    res.json({ success: true, payment: data.payment, orderNumber: nextOrderNumber });
   } catch (err) {
     console.error("Payment error:", err);
     res.status(500).json({ success: false, error: "Server error" });
