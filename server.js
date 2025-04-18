@@ -115,6 +115,21 @@ app.get("/order/:id", async (req, res) => {
   }
 });
 
+// ✅ Update an order by ID (add this near your other routes)
+app.put("/orders/:id", async (req, res) => {
+  try {
+    const updated = await Order.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ error: "Order not found" });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update order" });
+  }
+});
+
 app.post("/payment", async (req, res) => {
   const { token, amount, cart, customer } = req.body;
   if (!token || !amount || !cart || !customer) {
